@@ -8,7 +8,7 @@ namespace JJML20241103.Models
     {
         public Empleado()
         {
-            ReferenciasPersonales = new HashSet<ReferenciasPersonale>();
+            ReferenciasPersonales = new List<ReferenciasPersonale>();
         }
 
         public int Id { get; set; }
@@ -20,6 +20,6 @@ namespace JJML20241103.Models
         public string? Cargo { get; set; }
         public DateTime? FechaContratacion { get; set; }
 
-        public virtual ICollection<ReferenciasPersonale> ReferenciasPersonales { get; set; }
+        public virtual List<ReferenciasPersonale> ReferenciasPersonales { get; set; }
     }
 }
