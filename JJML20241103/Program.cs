@@ -1,7 +1,14 @@
+using JJML20241103.Models;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddDbContext<JJML20241103BDContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("conn")));
+
 
 var app = builder.Build();
 
