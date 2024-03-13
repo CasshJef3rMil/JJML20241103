@@ -38,7 +38,7 @@
             @foreach (var item in Model)
             {
                 index++;
-                if (item.Id >= 0) // Cambio aquí
+                if (item.Id > -1) // Cambio aquí
                 {
                     <tr>
                         <td>
@@ -47,7 +47,8 @@
                             <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Nombre" value="@item.Nombre">
                         </td>
                         <td>
-                            <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Apellido" value="@item.Apellido"> <!-- Corregido el name -->
+                            <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Apellido" value="@item.Apellido">
+                            <span class="text-danger" data-valmsg-for="ReferenciasPersonales[@index].Apellido" data-valmsg-replace="true"></span>
                         </td>
                         <td>
                             <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Relacion" value="@item.Relacion">

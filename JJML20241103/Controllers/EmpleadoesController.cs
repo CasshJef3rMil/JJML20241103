@@ -35,7 +35,9 @@ namespace JJML20241103.Controllers
             }
 
             var empleado = await _context.Empleados
-                .Iclude
+                
+                //este es para que se muestre en la vista detalles
+                .Include(s=> s.ReferenciasPersonales)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (empleado == null)
             {
@@ -48,67 +50,77 @@ namespace JJML20241103.Controllers
         // GET: Empleadoes/Create
         public IActionResult Create()
         {
-
-            var facturaVenta = new Empleado();
-            facturaVenta.FechaContratacion = DateTime.Now;
-            facturaVenta.Nombre = "";
-            facturaVenta.Apellido = "";
-            facturaVenta.Edad = 0;
-            facturaVenta.Cargo = "";
-            facturaVenta.ReferenciasPersonales = new List<ReferenciasPersonale>();
-            facturaVenta.ReferenciasPersonales.Add(new ReferenciasPersonale
+            var empleado = new Empleado();
+            empleado.FechaContratacion = DateTime.Now;
+            empleado.Edad = 0;
+            empleado.ReferenciasPersonales = new List<ReferenciasPersonale>();
+            empleado.ReferenciasPersonales.Add(new ReferenciasPersonale
             {
-
+                
             });
-           
             ViewBag.Accion = "Create";
-            return View(facturaVenta);
+            return View(empleado);
         }
+
+        //public IActionResult Create()
+        //{
+        //    var empleado = new Empleado();
+        //    empleado.FechaContratacion = DateTime.Now;
+        //    empleado.Nombre = "";
+        //    empleado.Apellido = "";
+        //    empleado.Edad = 0;
+        //    empleado.Cargo = "";
+        //    empleado.ReferenciasPersonales = new List<ReferenciasPersonale>();
+        //    empleado.ReferenciasPersonales.Add(new ReferenciasPersonale
+        //    {
+
+        //    });
+
+        //    ViewBag.Accion = "Create";
+        //    return View(empleado);
+        //}
 
         // POST: Empleadoes/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonale")] Empleado empleado)
+        public async Task<IActionResult> Create([Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado empleado)
         {
 
-            if (ModelState.IsValid)
-            {
+            _context.Add(empleado);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
 
-               
-                _context.Add(empleado);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            return View(empleado);
         }
 
        //metodo agregar detalles
+    
         [HttpPost]
-        public ActionResult AgregarDetalles([Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado facturaVenta, string accion)
+        public IActionResult AgregarDetalles([Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado empleado, string accion)
         {
-            facturaVenta.ReferenciasPersonales.Add(new ReferenciasPersonale { Nombre = "" });
+            empleado.ReferenciasPersonales.Add(new ReferenciasPersonale { Nombre = "" });
             ViewBag.Accion = accion;
-            return View(accion, facturaVenta);
+            return View("Create", empleado); // Redirecciona a la vista Create después de agregar los detalles
         }
 
-        //metodo eliminar detalles
-        public ActionResult EliminarDetalles([Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado facturaVenta,
-           int index, string accion)
-        {
-            var det = facturaVenta.ReferenciasPersonales[index];
-            if (accion == "Edit" && det.Id > 0)
-            {
-                det.Id = det.Id * -1;
-            }
-            else
-            {
-                facturaVenta.ReferenciasPersonales.RemoveAt(index);
-            }
 
-            ViewBag.Accion = accion;
-            return View(accion, facturaVenta);
+        public IActionResult EliminarDetalles([Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado empleado, int index, string accion)
+        {
+            {
+                var det = empleado.ReferenciasPersonales[index];
+                if (accion == "Edit" && det.Id > 0)
+                {
+                    det.Id = det.Id * -1;
+                }
+                else
+                {
+                    empleado.ReferenciasPersonales.RemoveAt(index);
+                }
+
+                ViewBag.Accion = accion;
+                return View(accion, empleado);
+            }
         }
 
         // GET: Empleadoes/Edit/5
