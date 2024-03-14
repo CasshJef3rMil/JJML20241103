@@ -1,82 +1,124 @@
 ﻿@model IEnumerable<ReferenciasPersonale>
 <input type="hidden" name="accion" value="@ViewBag.Accion" />
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Nombre)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Apellido)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Relacion)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Telefono)
-            </th>
-            <th>
-                @if (ViewBag.Accion == "Create" || ViewBag.Accion == "Edit")
-                {
-                    <button type="submit" class="btn btn-primary" formaction="@Url.Action("AgregarDetalles")">Agregar</button>
-                }
-            </th>
-        </tr>
-    </thead>
-    <tbody>
-        @{
-            int index = -1;
-        }
-        @if (Model != null && Model.Any())
-        {
-            @foreach (var item in Model)
-            {
-                index++;
-                if (item.Id > -1) // Cambio aquí
-                {
-                    <tr>
-                        <td>
-                            <input type="hidden" value="@item.Id" name="ReferenciasPersonales[@index].Id">
-                            <input type="hidden" value="@item.EmpleadoId" name="ReferenciasPersonales[@index].EmpleadoId">
-                            <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Nombre" value="@item.Nombre">
 
-                        </td>
-                        <td>
-                            <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Apellido" value="@item.Apellido">
-                            <span class="text-danger" data-valmsg-for="ReferenciasPersonales[@index].Apellido" data-valmsg-replace="true"></span>
-                        </td>
-                        <td>
-                            <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Relacion" value="@item.Relacion">
-                        </td>
-                        <td>
-                            <input class="form-control" data-readonly type="number" name="ReferenciasPersonales[@index].Telefono" value="@item.Telefono">
-                        </td>
-                        <td>
-                            @if (ViewBag.Accion == "Create" || ViewBag.Accion == "Edit")
-                            {
-                                <button name="index" value="@index" class="btn btn-primary" type="submit" formaction="@Url.Action("EliminarDetalles")">Eliminar</button>
-                            }
-                        </td>
-                    </tr>
-                }
-                else
+<style>
+    /* Estilos para la tabla */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        padding: 8px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .table th {
+        background-color: #f2f2f2;
+    }
+
+    .table th:last-child,
+    .table td:last-child {
+        text-align: center;
+    }
+
+    /* Estilos para los botones */
+    .btn-primary {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Estilos para el fondo */
+    body {
+        background-color: #f8f9fa;
+    }
+</style>
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Nombre)</th>
+                <th>@Html.DisplayNameFor(model => model.Apellido)</th>
+                <th>@Html.DisplayNameFor(model => model.Relacion)</th>
+                <th>@Html.DisplayNameFor(model => model.Telefono)</th>
+                <th>
+                    @if (ViewBag.Accion == "Create" || ViewBag.Accion == "Edit")
+                    {
+                        <button type="submit" class="btn btn-primary" formaction="@Url.Action("AgregarDetalles")">Agregar</button>
+                    }
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int index = -1;
+            }
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var item in Model)
                 {
-                    <tr>
-                        <td colspan="5">
-                            <!-- Corregido el colspan -->
-                            <input type="hidden" value="@item.Id" name="ReferenciasPersonales[@index].Id">
-                            <input type="hidden" value="@item.EmpleadoId" name="ReferenciasPersonales[@index].EmpleadoId">
-                            <input type="hidden" name="ReferenciasPersonales[@index].Nombre" value="@item.Nombre">
-                            <input type="hidden" name="ReferenciasPersonales[@index].Apellido" value="@item.Apellido">
-                            <input type="hidden" name="ReferenciasPersonales[@index].Relacion" value="@item.Relacion">
-                            <input type="hidden" name="ReferenciasPersonales[@index].Telefono" value="@item.Telefono">
-                        </td>
-                    </tr>
+                    index++;
+                    if (item.Id > -1)
+                    {
+                        <tr>
+                            <td>
+                                <input type="hidden" value="@item.Id" name="ReferenciasPersonales[@index].Id">
+                                <input type="hidden" value="@item.EmpleadoId" name="ReferenciasPersonales[@index].EmpleadoId">
+                                <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Nombre" value="@item.Nombre">
+                            </td>
+                            <td>
+                                <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Apellido" value="@item.Apellido">
+                                <span class="text-danger" data-valmsg-for="ReferenciasPersonales[@index].Apellido" data-valmsg-replace="true"></span>
+                            </td>
+                            <td>
+                                <input class="form-control" data-readonly type="text" name="ReferenciasPersonales[@index].Relacion" value="@item.Relacion">
+                            </td>
+                            <td>
+                                <input class="form-control" data-readonly type="number" name="ReferenciasPersonales[@index].Telefono" value="@item.Telefono">
+                            </td>
+                            <td>
+                                @if (ViewBag.Accion == "Create" || ViewBag.Accion == "Edit")
+                                {
+                                    <button name="index" value="@index" class="btn btn-primary" type="submit" formaction="@Url.Action("EliminarDetalles")">Eliminar</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5">
+                                <input type="hidden" value="@item.Id" name="ReferenciasPersonales[@index].Id">
+                                <input type="hidden" value="@item.EmpleadoId" name="ReferenciasPersonales[@index].EmpleadoId">
+                                <input type="hidden" name="ReferenciasPersonales[@index].Nombre" value="@item.Nombre">
+                                <input type="hidden" name="ReferenciasPersonales[@index].Apellido" value="@item.Apellido">
+                                <input type="hidden" name="ReferenciasPersonales[@index].Relacion" value="@item.Relacion">
+                                <input type="hidden" name="ReferenciasPersonales[@index].Telefono" value="@item.Telefono">
+                            </td>
+                        </tr>
+                    }
                 }
             }
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
+
 @if (ViewBag.Accion == "Details" || ViewBag.Accion == "Delete")
 {
     <script>
