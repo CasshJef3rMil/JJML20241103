@@ -44,6 +44,7 @@ namespace JJML20241103.Controllers
                 return NotFound();
             }
 
+            ViewBag.Accion = "Details";
             return View(empleado);
         }
 
@@ -131,11 +132,15 @@ namespace JJML20241103.Controllers
                 return NotFound();
             }
 
-            var empleado = await _context.Empleados.FindAsync(id);
+            var empleado = await _context.Empleados
+                 .Include(s => s.ReferenciasPersonales)
+                .FirstAsync(s => s.Id == id);
+             
             if (empleado == null)
             {
                 return NotFound();
             }
+            ViewBag.Accion = "Edit";
             return View(empleado);
         }
 
@@ -144,35 +149,80 @@ namespace JJML20241103.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion")] Empleado empleado)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado empleado)
         {
             if (id != empleado.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            try
             {
-                try
+                // Obtener los datos de la base de datos que van a ser modificados
+                var empleadoUpdate = await _context.Empleados
+                    .Include(e => e.ReferenciasPersonales)
+                    .FirstOrDefaultAsync(e => e.Id == id);
+
+                if (empleadoUpdate == null)
                 {
-                    _context.Update(empleado);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+
+                // Actualizar los campos del empleado
+                empleadoUpdate.Nombre = empleado.Nombre;
+                empleadoUpdate.Apellido = empleado.Apellido;
+                empleadoUpdate.Edad = empleado.Edad;
+                empleadoUpdate.Cargo = empleado.Cargo;
+                empleadoUpdate.FechaContratacion = empleado.FechaContratacion;
+
+                // Actualizar las referencias personales
+                foreach (var referencia in empleado.ReferenciasPersonales)
                 {
-                    if (!EmpleadoExists(empleado.Id))
+                    if (referencia.Id == 0)
                     {
-                        return NotFound();
+                        // Si es una nueva referencia, agregarla
+                        empleadoUpdate.ReferenciasPersonales.Add(referencia);
                     }
                     else
                     {
-                        throw;
+                        // Si es una referencia existente, encontrarla y actualizarla
+                        var referenciaExistente = empleadoUpdate.ReferenciasPersonales.FirstOrDefault(r => r.Id == referencia.Id);
+                        if (referenciaExistente != null)
+                        {
+                            referenciaExistente.Nombre = referencia.Nombre;
+                            referenciaExistente.Apellido = referencia.Apellido;
+                            referenciaExistente.Relacion = referencia.Relacion;
+                            referenciaExistente.Telefono = referencia.Telefono;
+                        }
                     }
                 }
-                return RedirectToAction(nameof(Index));
+
+                // Eliminar las referencias personales que se hayan marcado para eliminar
+                var referenciasAEliminar = empleado.ReferenciasPersonales.Where(r => r.Id < 0).ToList();
+                foreach (var referenciaAEliminar in referenciasAEliminar)
+                {
+                    empleadoUpdate.ReferenciasPersonales.Remove(referenciaAEliminar);
+                    _context.ReferenciasPersonales.Remove(referenciaAEliminar);
+                }
+
+                // Guardar los cambios en la base de datos
+                await _context.SaveChangesAsync();
             }
-            return View(empleado);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!EmpleadoExists(empleado.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Empleadoes/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -188,7 +238,7 @@ namespace JJML20241103.Controllers
             {
                 return NotFound();
             }
-
+            ViewBag.Accion = "Delete";
             return View(empleado);
         }
 
