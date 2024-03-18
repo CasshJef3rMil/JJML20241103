@@ -102,6 +102,7 @@ namespace JJML20241103.Controllers
         {
             empleado.ReferenciasPersonales.Add(new ReferenciasPersonale { Nombre = "" });
             ViewBag.Accion = accion;
+            //esto de aca abajo es fundamental (Accion), para editar
             return View(accion , empleado); // Redirecciona a la vista Create después de agregar los detalles
         }
 
@@ -154,52 +155,43 @@ namespace JJML20241103.Controllers
             try
             {
                 // Obtener los datos de la base de datos que van a ser modificados
-                var empleadoUpdate = await _context.Empleados
-                    .Include(e => e.ReferenciasPersonales)
-                    .FirstOrDefaultAsync(e => e.Id == empleado.Id);
-
-
-
-
-                // Actualizar los campos del empleado
-                empleadoUpdate.Nombre = empleado.Nombre;
-                empleadoUpdate.Apellido = empleado.Apellido;
-                empleadoUpdate.Edad = empleado.Edad;
-                empleadoUpdate.Cargo = empleado.Cargo;
-                empleadoUpdate.FechaContratacion = empleado.FechaContratacion;
-
-                // Actualizar las referencias personales
-                foreach (var referencia in empleado.ReferenciasPersonales)
+                var facturaUpdate = await _context.Empleados
+                        .Include(s => s.ReferenciasPersonales)
+                        .FirstAsync(s => s.Id == empleado.Id);
+                facturaUpdate.Nombre = empleado.Nombre;
+                facturaUpdate.Apellido = empleado.Apellido; /*.Where(s => s.Id > -1).Sum(s => s.PrecioUnitario * s.Cantidad);*/
+                facturaUpdate.Edad = empleado.Edad;
+                facturaUpdate.Cargo = empleado.Cargo;
+                // Obtener todos los detalles que seran nuevos y agregarlos a la base de datos
+                var detNew = empleado.ReferenciasPersonales.Where(s => s.Id == 0);
+                foreach (var d in detNew)
                 {
-                    if (referencia.Id == 0)
+                    facturaUpdate.ReferenciasPersonales.Add(d);
+                }
+                // Obtener todos los detalles que seran modificados y actualizar a la base de datos
+                var detUpdate = empleado.ReferenciasPersonales.Where(s => s.Id > 0);
+                foreach (var d in detUpdate)
+                {
+                    var det = facturaUpdate.ReferenciasPersonales.FirstOrDefault(s => s.Id == d.Id);
+                    det.Nombre = d.Nombre;
+                    det.Apellido = d.Apellido;
+                    det.Relacion = d.Relacion;
+                    det.Telefono = d.Telefono;
+                }
+                // Obtener todos los detalles que seran eliminados y actualizar a la base de datos
+                var delDet = empleado.ReferenciasPersonales.Where(s => s.Id < 0).ToList();
+                if (delDet != null && delDet.Count > 0)
+                {
+                    foreach (var d in delDet)
                     {
-                        // Si es una nueva referencia, agregarla
-                        empleadoUpdate.ReferenciasPersonales.Add(referencia);
-                    }
-                    else
-                    {
-                        // Si es una referencia existente, encontrarla y actualizarla
-                        var referenciaExistente = empleadoUpdate.ReferenciasPersonales.FirstOrDefault(r => r.Id == referencia.Id);
-                        if (referenciaExistente != null)
-                        {
-                            referenciaExistente.Nombre = referencia.Nombre;
-                            referenciaExistente.Apellido = referencia.Apellido;
-                            referenciaExistente.Relacion = referencia.Relacion;
-                            referenciaExistente.Telefono = referencia.Telefono;
-                        }
+                        d.Id = d.Id * -1;
+                        var det = facturaUpdate.ReferenciasPersonales.FirstOrDefault(s => s.Id == d.Id);
+                        _context.Remove(det);
+                        // facturaUpdate.DetFacturaVenta.Remove(det);
                     }
                 }
-
-                // Eliminar las referencias personales que se hayan marcado para eliminar
-                var referenciasAEliminar = empleado.ReferenciasPersonales.Where(r => r.Id < 0).ToList();
-                foreach (var referenciaAEliminar in referenciasAEliminar)
-                {
-                    empleadoUpdate.ReferenciasPersonales.Remove(referenciaAEliminar);
-                    _context.ReferenciasPersonales.Remove(referenciaAEliminar);
-                }
-
-                // Guardar los cambios en la base de datos
-                _context.Update(empleadoUpdate);
+                // Aplicar esos cambios a la base de datos
+                _context.Update(facturaUpdate);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
