@@ -102,7 +102,7 @@ namespace JJML20241103.Controllers
         {
             empleado.ReferenciasPersonales.Add(new ReferenciasPersonale { Nombre = "" });
             ViewBag.Accion = accion;
-            return View("Create", empleado); // Redirecciona a la vista Create después de agregar los detalles
+            return View(accion , empleado); // Redirecciona a la vista Create después de agregar los detalles
         }
 
 
@@ -149,24 +149,17 @@ namespace JJML20241103.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado empleado)
+        public async Task<IActionResult> Edit( int id, [Bind("Id,Nombre,Apellido,Edad,Cargo,FechaContratacion,ReferenciasPersonales")] Empleado empleado)
         {
-            if (id != empleado.Id)
-            {
-                return NotFound();
-            }
-
             try
             {
                 // Obtener los datos de la base de datos que van a ser modificados
                 var empleadoUpdate = await _context.Empleados
                     .Include(e => e.ReferenciasPersonales)
-                    .FirstOrDefaultAsync(e => e.Id == id);
+                    .FirstOrDefaultAsync(e => e.Id == empleado.Id);
 
-                if (empleadoUpdate == null)
-                {
-                    return NotFound();
-                }
+
+
 
                 // Actualizar los campos del empleado
                 empleadoUpdate.Nombre = empleado.Nombre;
@@ -206,6 +199,7 @@ namespace JJML20241103.Controllers
                 }
 
                 // Guardar los cambios en la base de datos
+                _context.Update(empleadoUpdate);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
