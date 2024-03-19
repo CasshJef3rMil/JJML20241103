@@ -219,6 +219,9 @@ namespace JJML20241103.Controllers
             }
 
             var empleado = await _context.Empleados
+
+                //este es para que se muestre en la vista detalles
+                .Include(s => s.ReferenciasPersonales)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (empleado == null)
             {
